@@ -104,6 +104,38 @@ def reportMatch(winner, loser):
     dbconnection.close()
  
  
+def havePlayedPreviously(player1, player2):
+    """"Returns True if the two players passed as arguments have played each
+    other already.
+    
+    Queries the matches database looking for the lowest player id as player_1_id
+    because we wrote reportMatch() to always sort the player ids before creating
+    a new row. This eliminates us having to look for the pair in either order
+    in this function."""
+    
+    # Assign player ids in a way that'll allow us to search for the lowest first
+    player1ID = min(player1, player2)
+    player2ID = max(player1, player2)
+    
+    # Query the database for this pairing
+    dbconnection = connect()
+    dbcursor = dbconnection.cursor()
+    
+    # Use of 'COALESCE' returns zero instead of 'None' when query returns no rows
+    dbcursor.execute("SELECT COALESCE(COUNT(*), 0) FROM matches WHERE player_1_id = " + str(player1ID) + " AND player_2_id = " + str(player2ID))
+    
+    # Assign only the first value in the first tuple to avoid error
+    previousMatches = dbcursor.fetchall()[0][0]
+    
+    dbconnection.close()
+    
+    # Return True or False, depending on whether a previous match exists or not
+    if (previousMatches > 0):
+        return True
+    else:
+        return False
+    
+ 
 def swissPairings():
     """Returns a list of pairs of players for the next round of a match.
   
@@ -124,7 +156,31 @@ def swissPairings():
     # Start with an empty list, iterate through results of playerStandings
     # in pairs and append row by row
     pairList = []
-    for i in range(0, len(currentStandings), 2):
-        pairList.append((currentStandings[i][0], currentStandings[i][1], currentStandings[i+1][0], currentStandings[i+1][1]))
+    
+    # Iterate through each row of the current standings...
+    for player in currentStandings:
+        
+        # if this player is not in the new pair list...
+        if any(player[0] in row for row in pairList) == False:
+            
+            # iterate through all of the other players...
+            for player2 in currentStandings:
+            
+                # and, if the other player is not the same person...
+                if player[0] != player2[0]:
+                
+                    # if this player is not in the new pair list...
+                    if any(player2[0] in row for row in pairList) == False:
+                
+                        # check that the other player is not already in the pairlist
+                        # and have not already played this player
+                        if (havePlayedPreviously(player[0], player2[0]) == False):
+                        
+                            # .. then add them as the next pair
+                            pairList.append((player[0], player[1], player2[0], player2[1]))
+                            break
+        
+    #for i in range(0, len(currentStandings), 2):
+    #    pairList.append((currentStandings[i][0], currentStandings[i][1], currentStandings[i+1][0], currentStandings[i+1][1]))
         
     return pairList
