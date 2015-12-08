@@ -5,9 +5,11 @@
 
 import psycopg2
 
+
 def connect():
     """Connect to the PostgreSQL database.  Returns a database connection."""
     return psycopg2.connect("dbname=tournament")
+
 
 def deleteMatches():
     """Remove all the match records from the database."""
@@ -17,6 +19,7 @@ def deleteMatches():
     dbconnection.commit()
     dbconnection.close()
 
+
 def deletePlayers():
     """Remove all the player records from the database."""
     dbconnection = connect()
@@ -24,6 +27,7 @@ def deletePlayers():
     dbcursor.execute("DELETE FROM players")
     dbconnection.commit()
     dbconnection.close()
+
     
 def countPlayers():
     """Returns the number of players currently registered."""
@@ -39,6 +43,20 @@ def countPlayers():
     dbconnection.close()
     return playerCount
 
+
+def createTournament(name):
+    """Adds a new tournament to the tournaments table."""
+    dbconnection = connect()
+    dbcursor = dbconnection.cursor()
+    
+    # Use string insertion method with tuple to prevent SQL injection attacks
+    dbcursor.execute("INSERT INTO tournaments (id, name) VALUES (DEFAULT, %s)",
+                     (name,))
+    
+    dbconnection.commit()
+    dbconnection.close()
+
+    
 def registerPlayer(name):
     """Adds a player to the tournament database.
   
@@ -52,17 +70,21 @@ def registerPlayer(name):
     dbcursor = dbconnection.cursor()
     
     # Use string insertion method with tuple to prevent SQL injection attacks
-    dbcursor.execute("INSERT INTO players (id, name) VALUES (DEFAULT, %s)", (name,))
+    dbcursor.execute("INSERT INTO players (id, name) VALUES (DEFAULT, %s)",
+                      (name,))
     
     dbconnection.commit()
     dbconnection.close()
+
 
 def registerCompetitor(tournament_id, competitor_id):
     """Registers an existing player as a competitor in a specific tournament."""
     dbconnection = connect()
     dbcursor = dbconnection.cursor()
     
-    dbcursor.execute("INSERT INTO competitors (tournament_id, competitor_id) VALUES (%s, %s)", (tournament_id, competitor_id,))
+    dbcursor.execute("""INSERT INTO competitors (tournament_id, competitor_id)
+                        VALUES (%s, %s)""",
+                        (tournament_id, competitor_id,))
     
     dbconnection.commit()
     dbconnection.close()
@@ -95,7 +117,8 @@ def playerStandings(tournament_id):
                               matches.player_2_id = players.id) AND
                               tournament_id = %s) as 'Matches'
                       FROM players
-                      ORDER BY 'Wins' DESC, 'Matches' DESC""",(tournament_id, tournament_id,))
+                      ORDER BY 'Wins' DESC, 'Matches' DESC;""",
+                      (tournament_id, tournament_id,))
     
     # Start with an empty list, iterate through results, and append row by row
     playerStandings = []
@@ -106,10 +129,12 @@ def playerStandings(tournament_id):
     return playerStandings
 
 
-def reportMatch(winner, loser):
-    """Records the outcome of a single match between two players.
+def reportMatch(tournament_id, winner, loser):
+    """Records the outcome of a single match between two players in a specific
+    tournament.
 
     Args:
+      tournament_id:  the id of the tournament this match belongs to
       winner:  the id number of the player who won
       loser:  the id number of the player who lost
     """
@@ -121,15 +146,19 @@ def reportMatch(winner, loser):
     dbcursor = dbconnection.cursor()
     
     # Use string insertion method with tuple to prevent SQL injection attacks
-    dbcursor.execute("INSERT INTO matches (player_1_id, player_2_id, winner_id) VALUES (%s, %s, %s)", (str(player1ID), str(player2ID), str(winner),))
+    dbcursor.execute("""INSERT INTO matches (tournament_id, player_1_id,
+                        player_2_id, winner_id) VALUES
+                        (%s, %s, %s, %s)""",
+                        (str(tournament_id), str(player1ID), str(player2ID),
+                        str(winner),))
     
     dbconnection.commit()
     dbconnection.close()
  
  
-def havePlayedPreviously(player1, player2):
+def havePlayedPreviously(tournament_id, player1, player2):
     """"Returns True if the two players passed as arguments have played each
-    other already.
+    other already in this tournament.
     
     Queries the matches database looking for the lowest player id as player_1_id
     because we wrote reportMatch() to always sort the player ids before creating
@@ -144,8 +173,13 @@ def havePlayedPreviously(player1, player2):
     dbconnection = connect()
     dbcursor = dbconnection.cursor()
     
-    # Use of 'COALESCE' returns zero instead of 'None' when query returns no rows
-    dbcursor.execute("SELECT COALESCE(COUNT(*), 0) FROM matches WHERE player_1_id = " + str(player1ID) + " AND player_2_id = " + str(player2ID))
+    # 'COALESCE' returns zero instead of 'None' when query returns no rows
+    dbcursor.execute("""SELECT  COALESCE(COUNT(*), 0)
+                        FROM    matches
+                        WHERE   tournament_id = %s AND
+                                player_1_id = %s AND
+                                player_2_id = %s;""",
+                                (tournament_id, player1ID, player2ID,))
     
     # Assign only the first value in the first tuple to avoid error
     previousMatches = dbcursor.fetchall()[0][0]
@@ -159,8 +193,9 @@ def havePlayedPreviously(player1, player2):
         return False
     
  
-def swissPairings():
-    """Returns a list of pairs of players for the next round of a match.
+def swissPairings(tournament_id):
+    """Returns a list of pairs of players for the next round of a match in a
+    specific tournament.
   
     Assuming that there are an even number of players registered, each player
     appears exactly once in the pairings.  Each player is paired with another
@@ -174,7 +209,7 @@ def swissPairings():
         id2: the second player's unique id
         name2: the second player's name
     """
-    currentStandings = playerStandings()
+    currentStandings = playerStandings(tournament_id)
     
     # Start with an empty list, iterate through results of playerStandings
     # in pairs and append row by row
@@ -202,8 +237,5 @@ def swissPairings():
                             # .. then add them as the next pair
                             pairList.append((player[0], player[1], player2[0], player2[1]))
                             break
-        
-    #for i in range(0, len(currentStandings), 2):
-    #    pairList.append((currentStandings[i][0], currentStandings[i][1], currentStandings[i+1][0], currentStandings[i+1][1]))
-        
+    
     return pairList
