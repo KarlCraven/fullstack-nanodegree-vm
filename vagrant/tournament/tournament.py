@@ -57,8 +57,20 @@ def registerPlayer(name):
     dbconnection.commit()
     dbconnection.close()
 
-def playerStandings():
-    """Returns a list of the players and their win records, sorted by wins.
+def registerCompetitor(tournament_id, competitor_id):
+    """Registers an existing player as a competitor in a specific tournament."""
+    dbconnection = connect()
+    dbcursor = dbconnection.cursor()
+    
+    dbcursor.execute("INSERT INTO competitors (tournament_id, competitor_id) VALUES (%s, %s)", (tournament_id, competitor_id,))
+    
+    dbconnection.commit()
+    dbconnection.close()
+
+    
+def playerStandings(tournament_id):
+    """Returns a list of the players and their win records, sorted by wins, for
+    a specific tournament.
 
     The first entry in the list should be the player in first place, or a player
     tied for first place if there is currently a tie.
@@ -72,7 +84,18 @@ def playerStandings():
     """
     dbconnection = connect()
     dbcursor = dbconnection.cursor()
-    dbcursor.execute("SELECT * FROM player_standings")
+    dbcursor.execute("""SELECT  players.id, players.name,
+                      (SELECT COUNT(*)
+                       FROM   matches
+                       WHERE  matches.winner_id = players.id AND
+                              tournament_id = %s) as 'Wins',
+                      (SELECT COUNT(*)
+                       FROM   matches
+                       WHERE  (matches.player_1_id = players.id OR
+                              matches.player_2_id = players.id) AND
+                              tournament_id = %s) as 'Matches'
+                      FROM players
+                      ORDER BY 'Wins' DESC, 'Matches' DESC""",(tournament_id, tournament_id,))
     
     # Start with an empty list, iterate through results, and append row by row
     playerStandings = []
