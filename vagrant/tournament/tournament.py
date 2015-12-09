@@ -47,19 +47,23 @@ def deletePlayers():
     dbconnection.close()
 
     
-def countPlayers():
-    """Returns the number of players currently registered."""
+def countCompetitors(tournament_id):
+    """Returns the number of competitors currently registered in a specific
+    tournament."""
     dbconnection = connect()
     dbcursor = dbconnection.cursor()
     
     # Use of 'COALESCE' returns zero instead of 'None' when table is empty
-    dbcursor.execute("SELECT COALESCE(COUNT(*), 0) FROM players;")
+    dbcursor.execute("""SELECT COALESCE(COUNT(*), 0)
+                        FROM competitors
+                        WHERE tournament_id = %s;""",
+                        (tournament_id,))
     
     # Assign only the first value in the first tuple to avoid error
-    playerCount = dbcursor.fetchall()[0][0]
+    competitorCount = dbcursor.fetchall()[0][0]
     
     dbconnection.close()
-    return playerCount
+    return competitorCount
 
 
 def createTournament(name):
@@ -68,8 +72,9 @@ def createTournament(name):
     dbcursor = dbconnection.cursor()
     
     # Use string insertion method with tuple to prevent SQL injection attacks
-    dbcursor.execute("INSERT INTO tournaments (id, name) VALUES (DEFAULT, %s);",
-                     (name,))
+    dbcursor.execute("""INSERT INTO tournaments (id, name) VALUES
+                        (DEFAULT, %s);""",
+                        (name,))
     
     dbconnection.commit()
     dbconnection.close()

@@ -11,8 +11,9 @@ def clearAllTables():
     deleteCompetitors()
     deleteTournaments()
     deletePlayers()
-    
-def testRegister():
+
+
+def testRegisterPlayers():
     players = ["Adam Abrams", "Bob Buick", "Cecil Christian", "David Dallas",
                "Esther Evans", "Francis Farrow", "Gillian Graham", "Hal Hart",
                "Ian Isthmus", "Jennifer Jones", "Karen Kit", "Lorna Levi",
@@ -21,7 +22,31 @@ def testRegister():
         registerPlayer(player)
     print "\n" + str(len(players)) + "players registered."
 
-def testRound():
+
+def testCreateTournaments():
+    createTournament("Test Tournament")
+
+    
+def testRegisterCompetitors():
+    dbconnection = connect()
+    dbcursor = dbconnection.cursor()
+    
+    dbcursor.execute("SELECT id FROM players;""")
+    
+    player_ids = []
+    for row in dbcursor.fetchall():
+        player_ids.append(row)
+    
+    dbconnection.commit()
+    dbconnection.close()
+    
+    for id in player_ids:
+        registerCompetitor(1, id)
+    
+    print "\n" + str(len(player_ids)) + "competitors registered."
+    
+    
+def testPlayRounds():
     matchPairings = swissPairings()
     print "\nPlayers have been paired"
     for row in matchPairings:
@@ -37,11 +62,14 @@ def testRound():
         print row[1] + ": " + str(row[2]) + "/" + str(row[3])   
 
 if __name__ == '__main__':
-    testRegister()
+    clearAllTables()
+    testRegisterPlayers()
+    testCreateTournament()
+    testRegisterCompetitors()
     print "\nROUND 1! ---------------------------------------------------------"
-    testRound()
+    testPlayRounds()
     print "\nROUND 2! ---------------------------------------------------------"
-    testRound()
+    testPlayRounds()
     print "\nROUND 3! ---------------------------------------------------------"
-    testRound()
+    testPlayRounds()
     print "\n3 rounds have been tested"
