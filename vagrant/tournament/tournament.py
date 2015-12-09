@@ -133,14 +133,14 @@ def playerStandings(tournament_id):
                       (SELECT COUNT(*)
                        FROM   matches
                        WHERE  matches.winner_id = players.id AND
-                              tournament_id = %s) as 'Wins',
+                              tournament_id = %s) as "Wins",
                       (SELECT COUNT(*)
                        FROM   matches
                        WHERE  (matches.player_1_id = players.id OR
                               matches.player_2_id = players.id) AND
-                              tournament_id = %s) as 'Matches'
+                              tournament_id = %s) as "Matches"
                       FROM players
-                      ORDER BY 'Wins' DESC, 'Matches' DESC;""",
+                      ORDER BY "Wins" DESC, "Matches" DESC;""",
                       (tournament_id, tournament_id,))
     
     # Start with an empty list, iterate through results, and append row by row
@@ -255,7 +255,7 @@ def swissPairings(tournament_id):
                 
                         # check that the other player is not already in the pairlist
                         # and have not already played this player
-                        if (havePlayedPreviously(player[0], player2[0]) == False):
+                        if (havePlayedPreviously(tournament_id, player[0], player2[0]) == False):
                         
                             # .. then add them as the next pair
                             pairList.append((player[0], player[1], player2[0], player2[1]))

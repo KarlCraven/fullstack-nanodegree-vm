@@ -1,14 +1,10 @@
 -- Database schema for the tournament project.
 
 -- Drop all existing tables and views
-DROP VIEW IF EXISTS player_standings;
-DROP TABLE IF EXISTS matches;
-DROP TABLE IF EXISTS players;
-DROP TABLE IF EXISTS tournament;
-
-
--- Create new database
-CREATE DATABASE tournament;
+DROP TABLE IF EXISTS matches CASCADE;
+DROP TABLE IF EXISTS competitors CASCADE;
+DROP TABLE IF EXISTS players CASCADE;
+DROP TABLE IF EXISTS tournaments;
 
 
 -- Create players table
@@ -16,6 +12,7 @@ CREATE TABLE players (
     id      serial PRIMARY KEY,
     name    text
 );
+
 
 -- Populate players table with demo data
 INSERT INTO players (id, name) VALUES
@@ -91,17 +88,3 @@ CREATE TABLE matches (
 --    (3, 4, 3),
 --    (5, 6, 6),
 --    (7, 8, 7);
-
-
--- Create player standings view
---CREATE VIEW player_standings AS
---    SELECT  players.id, players.name, 
---    (SELECT COUNT(*)
---     FROM   matches
---     WHERE  matches.winner_id = players.id) as "Wins",
---    (SELECT COUNT(*)
---     FROM   matches
---     WHERE  matches.player_1_id = players.id OR
---            matches.player_2_id = players.id) as "Matches"
---    FROM players
---    ORDER BY "Wins" DESC, "Matches" DESC
