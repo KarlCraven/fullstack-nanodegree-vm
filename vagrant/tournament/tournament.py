@@ -15,16 +15,34 @@ def deleteMatches():
     """Remove all the match records from the database."""
     dbconnection = connect()
     dbcursor = dbconnection.cursor()
-    dbcursor.execute("DELETE FROM matches")
+    dbcursor.execute("DELETE FROM matches;")
     dbconnection.commit()
     dbconnection.close()
 
 
+def deleteCompetitors():
+    """Removes all tournament competitors from the database."""
+    dbconnection = connect()
+    dbcursor = dbconnection.cursor()
+    dbcursor.execute("DELETE FROM competitors;")
+    dbconnection.commit()
+    dbconnection.close()
+
+    
+def deleteTournaments():
+    """Removes all tournaments from the database."""
+    dbconnection = connect()
+    dbcursor = dbconnection.cursor()
+    dbcursor.execute("DELETE FROM tournaments;")
+    dbconnection.commit()
+    dbconnection.close()
+
+    
 def deletePlayers():
     """Remove all the player records from the database."""
     dbconnection = connect()
     dbcursor = dbconnection.cursor()
-    dbcursor.execute("DELETE FROM players")
+    dbcursor.execute("DELETE FROM players;")
     dbconnection.commit()
     dbconnection.close()
 
@@ -35,7 +53,7 @@ def countPlayers():
     dbcursor = dbconnection.cursor()
     
     # Use of 'COALESCE' returns zero instead of 'None' when table is empty
-    dbcursor.execute("SELECT COALESCE(COUNT(*), 0) FROM players")
+    dbcursor.execute("SELECT COALESCE(COUNT(*), 0) FROM players;")
     
     # Assign only the first value in the first tuple to avoid error
     playerCount = dbcursor.fetchall()[0][0]
@@ -50,7 +68,7 @@ def createTournament(name):
     dbcursor = dbconnection.cursor()
     
     # Use string insertion method with tuple to prevent SQL injection attacks
-    dbcursor.execute("INSERT INTO tournaments (id, name) VALUES (DEFAULT, %s)",
+    dbcursor.execute("INSERT INTO tournaments (id, name) VALUES (DEFAULT, %s);",
                      (name,))
     
     dbconnection.commit()
@@ -70,7 +88,7 @@ def registerPlayer(name):
     dbcursor = dbconnection.cursor()
     
     # Use string insertion method with tuple to prevent SQL injection attacks
-    dbcursor.execute("INSERT INTO players (id, name) VALUES (DEFAULT, %s)",
+    dbcursor.execute("INSERT INTO players (id, name) VALUES (DEFAULT, %s);",
                       (name,))
     
     dbconnection.commit()
@@ -83,7 +101,7 @@ def registerCompetitor(tournament_id, competitor_id):
     dbcursor = dbconnection.cursor()
     
     dbcursor.execute("""INSERT INTO competitors (tournament_id, competitor_id)
-                        VALUES (%s, %s)""",
+                        VALUES (%s, %s);""",
                         (tournament_id, competitor_id,))
     
     dbconnection.commit()
@@ -148,7 +166,7 @@ def reportMatch(tournament_id, winner, loser):
     # Use string insertion method with tuple to prevent SQL injection attacks
     dbcursor.execute("""INSERT INTO matches (tournament_id, player_1_id,
                         player_2_id, winner_id) VALUES
-                        (%s, %s, %s, %s)""",
+                        (%s, %s, %s, %s);""",
                         (str(tournament_id), str(player1ID), str(player2ID),
                         str(winner),))
     

@@ -5,18 +5,21 @@
 from tournament import *
 import random
 
-def testRegister():
+
+def clearAllTables():
     deleteMatches()
+    deleteCompetitors()
+    deleteTournaments()
     deletePlayers()
-    registerPlayer("Markov Chaney")
-    registerPlayer("Joe Malik")
-    registerPlayer("Mao Tsu-hsi")
-    registerPlayer("Atlanta Hope")
-    registerPlayer("Victoria Craven")
-    registerPlayer("Melva Brown")
-    registerPlayer("Jennifer Vincent")
-    registerPlayer("Paul Davis")
-    print "\n8 players registered."
+    
+def testRegister():
+    players = ["Adam Abrams", "Bob Buick", "Cecil Christian", "David Dallas",
+               "Esther Evans", "Francis Farrow", "Gillian Graham", "Hal Hart",
+               "Ian Isthmus", "Jennifer Jones", "Karen Kit", "Lorna Levi",
+               "Mandy Myrtle", "Ned Nelson", "Oliver Ort", "Pat Pearson"]
+    for player in players:
+        registerPlayer(player)
+    print "\n" + str(len(players)) + "players registered."
 
 def testRound():
     matchPairings = swissPairings()
