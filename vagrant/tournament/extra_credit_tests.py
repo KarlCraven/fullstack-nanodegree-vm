@@ -24,8 +24,9 @@ def testRegisterPlayers():
 
 
 def testCreateTournament():
-    createTournament("Test Tournament")
-    print "\nTest tournament created"
+    createTournament("Tournament 1")
+    createTournament("Tournament 2")
+    print "\nTest tournaments created"
 
     
 def testRegisterCompetitors():
@@ -33,25 +34,43 @@ def testRegisterCompetitors():
     dbcursor = dbconnection.cursor()
     
     dbcursor.execute("SELECT id FROM players;")
-    player_ids = []
+    t1_player_ids = []
+    t2_player_ids = []
+    i = 0
+    
     for row in dbcursor.fetchall():
-        player_ids.append(row)
+        print str(i)
+        if (i % 2 == 0):
+            t1_player_ids.append(row)
+        else:
+            t2_player_ids.append(row)
+        i+=1
     
     dbcursor.execute("SELECT id FROM tournaments;")
     tournament_ids = []
+    
     for row in dbcursor.fetchall():
         tournament_ids.append(row)
-    t_id = tournament_ids[0][0]
+    
+    t_id_1 = tournament_ids[0][0]
+    t_id_2 = tournament_ids[1][0]
     
     dbconnection.commit()
     dbconnection.close()
     
-    for id in player_ids:
-        registerCompetitor(t_id, id)
+    for id1 in t1_player_ids:
+        registerCompetitor(t_id_1, id1)
     
-    print "\n" + str(len(player_ids)) + " competitors registered."
+    for id2 in t2_player_ids:
+        registerCompetitor(t_id_2, id2)
     
-    return t_id
+    print "\n" + str(len(t1_player_ids)) + \
+          " competitors registered in tournament " + str(t_id_1)
+    print "\n" + str(len(t2_player_ids)) + \
+          " competitors registered in tournament " + str(t_id_2)
+    
+    t_id_tuple = (t_id_1, t_id_2)
+    return t_id_tuple
     
     
 def testPlayRounds(t_id):
@@ -74,11 +93,15 @@ if __name__ == '__main__':
     testRegisterPlayers()
     testCreateTournament()
     tournament_id = testRegisterCompetitors()
-    print(tournament_id)
-    print "\nROUND 1! ---------------------------------------------------------"
-    testPlayRounds(tournament_id)
-    print "\nROUND 2! ---------------------------------------------------------"
-    testPlayRounds(tournament_id)
-    print "\nROUND 3! ---------------------------------------------------------"
-    testPlayRounds(tournament_id)
-    print "\n3 rounds have been tested"
+    
+    for id in tournament_id:
+        print "\n=============================================================="
+        print "\nBeginning Tournament " + str(id) + "..."
+        print "\n"
+        print "\nROUND 1! -----------------------------------------------------"
+        testPlayRounds(id)
+        print "\nROUND 2! -----------------------------------------------------"
+        testPlayRounds(id)
+        print "\nROUND 3! -----------------------------------------------------"
+        testPlayRounds(id)
+        print "\n3 rounds have been tested"

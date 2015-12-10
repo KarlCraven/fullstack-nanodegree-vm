@@ -139,9 +139,11 @@ def playerStandings(tournament_id):
                        WHERE  (matches.player_1_id = players.id OR
                               matches.player_2_id = players.id) AND
                               tournament_id = %s) as "Matches"
-                      FROM players
+                      FROM players INNER JOIN competitors
+                           ON (players.id = competitors.competitor_id)
+                      WHERE competitors.tournament_id = %s
                       ORDER BY "Wins" DESC, "Matches" DESC;""",
-                      (tournament_id, tournament_id,))
+                      (tournament_id, tournament_id, tournament_id,))
     
     # Start with an empty list, iterate through results, and append row by row
     playerStandings = []
@@ -172,8 +174,7 @@ def reportMatch(tournament_id, winner, loser):
     dbcursor.execute("""INSERT INTO matches (tournament_id, player_1_id,
                         player_2_id, winner_id) VALUES
                         (%s, %s, %s, %s);""",
-                        (str(tournament_id), str(player1ID), str(player2ID),
-                        str(winner),))
+                        (tournament_id, player1ID, player2ID, winner,))
     
     dbconnection.commit()
     dbconnection.close()
