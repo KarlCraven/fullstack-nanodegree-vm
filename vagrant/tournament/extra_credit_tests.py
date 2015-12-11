@@ -87,7 +87,8 @@ def testPlayRounds(t_id):
     print "\nMatch winners have been declared. Current standings..."
     currentStandings = playerStandings(t_id)
     for row in currentStandings:
-        print row[1] + ": " + str(row[2]) + "/" + str(row[3])   
+        print row[1] + ": " + str(row[3]) + "/" + str(row[4]) + " (" + \
+              str(row[2]) + ")"  
 
 if __name__ == '__main__':
     clearAllTables()

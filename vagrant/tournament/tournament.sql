@@ -25,7 +25,7 @@ CREATE TABLE tournaments (
 CREATE TABLE competitors (
     tournament_id   integer REFERENCES tournaments(id),
     competitor_id   integer REFERENCES players(id),
-    competitor_bye  boolean
+    competitor_bye  boolean,
     PRIMARY KEY (tournament_id, competitor_id)
 );
 

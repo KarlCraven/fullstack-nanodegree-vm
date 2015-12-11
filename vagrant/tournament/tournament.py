@@ -134,16 +134,17 @@ def playerStandings(tournament_id):
     tied for first place if there is currently a tie.
 
     Returns:
-      A list of tuples, each of which contains (id, name, wins, matches):
+      A list of tuples, each of which contains (id, name, bye, wins, matches):
         id: the player's unique id (assigned by the database)
         name: the player's full name (as registered)
+        bye: whether or not they have used their round bye in this tournament
         wins: the number of matches the player has won
         matches: the number of matches the player has played
-        bye: whether or not they have used their round bye in this tournament
     """
     dbconnection = connect()
     dbcursor = dbconnection.cursor()
-    dbcursor.execute("""SELECT  players.id, players.name, competitors.bye,
+    dbcursor.execute("""SELECT  players.id, players.name,
+                                competitors.competitor_bye,
                       (SELECT COUNT(*)
                        FROM   matches
                        WHERE  matches.winner_id = players.id AND
@@ -235,10 +236,9 @@ def swissPairings(tournament_id):
     """Returns a list of pairs of players for the next round of a match in a
     specific tournament.
   
-    Assuming that there are an even number of players registered, each player
-    appears exactly once in the pairings.  Each player is paired with another
-    player with an equal or nearly-equal win record, that is, a player adjacent
-    to him or her in the standings.
+    Each player is paired with another player with an equal or nearly-equal win
+    record, that is, a player adjacent to him or her in the standings. If there
+    is an odd number of players, one of them gets a 'bye' for this round.
   
     Returns:
       A list of tuples, each of which contains (id1, name1, id2, name2)
@@ -249,11 +249,21 @@ def swissPairings(tournament_id):
     """
     currentStandings = playerStandings(tournament_id)
     
-    while (len(currentStandings) % 2 != 0):
+    # If our list of competitors has an odd length...
+    if (len(currentStandings) % 2 != 0):
+    
+        # ... iterate through the players until we find someone who has not used
+        # their round bye in this tournament...
         for player in currentStandings:
-            if (player[2] = False):
+        
+            # ... remove them from the list, record in the database that
+            # they have now used their bye, and give them a 'win' against
+            # themselves
+            if (player[2] == False):
                 currentStandings.remove(player)
                 useCompetitorBye(tournament_id, player[0])
+                reportMatch(tournament_id, player[0], player[0])
+                break
     
     # Start with an empty list, iterate through results of playerStandings
     # in pairs and append row by row
@@ -274,12 +284,14 @@ def swissPairings(tournament_id):
                     # if this player is not in the new pair list...
                     if any(player2[0] in row for row in pairList) == False:
                 
-                        # check that the other player is not already in the pairlist
-                        # and have not already played this player
-                        if (havePlayedPreviously(tournament_id, player[0], player2[0]) == False):
+                        # check that the other player is not already in the
+                        # pairlist and have not already played this player
+                        if (havePlayedPreviously(tournament_id, player[0],
+                                                 player2[0]) == False):
                         
                             # .. then add them as the next pair
-                            pairList.append((player[0], player[1], player2[0], player2[1]))
+                            pairList.append((player[0], player[1], player2[0],
+                                             player2[1]))
                             break
     
     return pairList
