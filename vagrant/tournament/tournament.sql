@@ -21,16 +21,11 @@ CREATE TABLE tournaments (
 );
 
 
--- Populate tournaments table with demo data
-INSERT INTO tournaments (id, name) VALUES
-    (DEFAULT, '2014 Grand Slam'),
-    (DEFAULT, '2015 Charity Cup');
-
-
 -- Create tournament competitors table
 CREATE TABLE competitors (
     tournament_id   integer REFERENCES tournaments(id),
     competitor_id   integer REFERENCES players(id),
+    competitor_bye  boolean
     PRIMARY KEY (tournament_id, competitor_id)
 );
 
