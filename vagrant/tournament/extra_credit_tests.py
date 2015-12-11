@@ -17,7 +17,8 @@ def testRegisterPlayers():
     players = ["Adam Abrams", "Bob Buick", "Cecil Christian", "David Dallas",
                "Esther Evans", "Francis Farrow", "Gillian Graham", "Hal Hart",
                "Ian Isthmus", "Jennifer Jones", "Karen Kit", "Lorna Levi",
-               "Mandy Myrtle", "Ned Nelson", "Oliver Ort", "Pat Pearson"]
+               "Mandy Myrtle", "Ned Nelson", "Oliver Ort", "Pat Pearson",
+               "Quincy Quatermass"]
     for player in players:
         registerPlayer(player)
     print "\n" + str(len(players)) + " players registered."

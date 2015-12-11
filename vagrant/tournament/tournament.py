@@ -105,13 +105,26 @@ def registerCompetitor(tournament_id, competitor_id):
     dbconnection = connect()
     dbcursor = dbconnection.cursor()
     
-    dbcursor.execute("""INSERT INTO competitors (tournament_id, competitor_id)
-                        VALUES (%s, %s);""",
-                        (tournament_id, competitor_id,))
+    dbcursor.execute("""INSERT INTO competitors (tournament_id, competitor_id,
+                        competitor_bye)
+                        VALUES (%s, %s, %s);""",
+                        (tournament_id, competitor_id, False,))
     
     dbconnection.commit()
     dbconnection.close()
 
+def useCompetitorBye(tournament_id, competitor_id):
+    """Registers that a player's bye has been used in a specific tournament."""
+    dbconnection = connect()
+    dbcursor = dbconnection.cursor()
+    
+    dbcursor.execute("""UPDATE competitors SET competitor_bye = True
+                        WHERE tournament_id = %s AND
+                              competitor_id = %s""",
+                        (tournament_id, competitor_id,))
+    
+    dbconnection.commit()
+    dbconnection.close()
     
 def playerStandings(tournament_id):
     """Returns a list of the players and their win records, sorted by wins, for
@@ -126,10 +139,11 @@ def playerStandings(tournament_id):
         name: the player's full name (as registered)
         wins: the number of matches the player has won
         matches: the number of matches the player has played
+        bye: whether or not they have used their round bye in this tournament
     """
     dbconnection = connect()
     dbcursor = dbconnection.cursor()
-    dbcursor.execute("""SELECT  players.id, players.name,
+    dbcursor.execute("""SELECT  players.id, players.name, competitors.bye,
                       (SELECT COUNT(*)
                        FROM   matches
                        WHERE  matches.winner_id = players.id AND
@@ -148,7 +162,7 @@ def playerStandings(tournament_id):
     # Start with an empty list, iterate through results, and append row by row
     playerStandings = []
     for row in dbcursor.fetchall():
-        playerStandings.append((row[0], row[1], row[2], row[3]))
+        playerStandings.append((row[0], row[1], row[2], row[3], row[4]))
     
     dbconnection.close()
     return playerStandings
@@ -234,6 +248,12 @@ def swissPairings(tournament_id):
         name2: the second player's name
     """
     currentStandings = playerStandings(tournament_id)
+    
+    while (len(currentStandings) % 2 != 0):
+        for player in currentStandings:
+            if (player[2] = False):
+                currentStandings.remove(player)
+                useCompetitorBye(tournament_id, player[0])
     
     # Start with an empty list, iterate through results of playerStandings
     # in pairs and append row by row
