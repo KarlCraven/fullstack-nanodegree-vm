@@ -38,19 +38,21 @@ will require changes to the database schema.
 As far as I am aware, this project will only run within the very specific local 
 environment that we were instructed to create for this project, so if you want 
 to try it, you will need to:
-1 Install [Vagrant](https://www.vagrantup.com/).
-2 Install [VirtualBox](https://www.virtualbox.org/).
+
+1. Install [Vagrant](https://www.vagrantup.com/).
+2. Install [VirtualBox](https://www.virtualbox.org/).
 
 Once you have everything set up, you will need to:
-1 Run Git Bash
-2 cd to the 'vagrant' directory.
-3 Issue the `vagrant up` command to start up the virtual machine.
-4 Log in to the VM with the `vagrant ssh` command.
-5 cd within the virtual environment to the '/vagrant/tournament' directory.
-6 Import the tournament database using the command `\i tournament.sql`.
-7 Connect to the tournament database using the command `\c tournament`.
-8 Exit the database environment using the command `\q`.
-9 To run the basic functionality tests, run the command `python tournament_test.py`.
+
+1. Run Git Bash
+2. cd to the 'vagrant' directory.
+3. Issue the `vagrant up` command to start up the virtual machine.
+4. Log in to the VM with the `vagrant ssh` command.
+5. cd within the virtual environment to the '/vagrant/tournament' directory.
+6. Import the tournament database using the command `\i tournament.sql`.
+7. Connect to the tournament database using the command `\c tournament`.
+8. Exit the database environment using the command `\q`.
+9. To run the basic functionality tests, run the command `python tournament_test.py`.
 
 Obviously, you will need to adjust the cd commands if you want to test the 
 extra credit version. The test file for the extra credit version is
