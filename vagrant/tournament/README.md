@@ -1,7 +1,9 @@
 # Tournament.py
-Tournament.py is a project built as part of the Udacity Full Stack Web Developer 
-Nanodegree. The project uses the psycopg2 Python module to interface with a 
-PostgreSQL database. It was built and tested on a virtual machine alone.
+Tournament.py is a project built as part of the [Udacity Full Stack Web Developer 
+Nanodegree](https://www.udacity.com/course/full-stack-web-developer-nanodegree--nd004).
+The project uses the [psycopg2 Python module](http://initd.org/psycopg/docs/index.html) 
+to interface with a PostgreSQL database. It was built and tested on a virtual 
+machine alone.
 
 The project simulates a Swiss-style tournament. More information on Swiss-style 
 tournaments can be found on [Wikipedia](https://en.wikipedia.org/wiki/Swiss-system_tournament). 
@@ -17,7 +19,7 @@ match wins are recorded.
 
 ### Extra Credit Version
 The extra credit version, located in the extra_credit directory, addresses all 
-of the projects suggested extra credit criteria, namely:
+of the project's suggested extra credit criteria, namely:
 * Prevent rematches between players.
 * Don’t assume an even number of players. If there is an odd number of players, 
 assign one player a “bye” (skipped round). A bye counts as a free win. A player 
@@ -35,8 +37,9 @@ will require changes to the database schema.
 ## Usage
 As far as I am aware, this project will only run within the very specific local 
 environment that we were instructed to create for this project, so if you want 
-to try it, you will need to follow the instructions here to create the 
-environment.
+to try it, you will need to:
+1. Install [Vagrant](https://www.vagrantup.com/).
+2. Install [VirtualBox](https://www.virtualbox.org/).
 
 Once you have everything set up, you will need to:
 1. Run Git Bash
@@ -47,8 +50,7 @@ Once you have everything set up, you will need to:
 6. Import the tournament database using the command `\i tournament.sql`.
 7. Connect to the tournament database using the command `\c tournament`.
 8. Exit the database environment using the command `\q`.
-9. To run the basic functionality tests, run the command 
-`python tournament_test.py`.
+9. To run the basic functionality tests, run the command `python tournament_test.py`.
 
 Obviously, you will need to adjust the cd commands if you want to test the 
 extra credit version. The test file for the extra credit version is
