@@ -154,8 +154,7 @@ def playerStandings(tournament_id):
                        WHERE  (matches.player_1_id = players.id OR
                               matches.player_2_id = players.id) AND
                               tournament_id = %s AND
-                              matches.draw = True) as "Draws",
-                              
+                              matches.draw = True) as "Draws", 
                       (SELECT COUNT(*)
                        FROM   matches
                        WHERE  tournament_id = %s AND
