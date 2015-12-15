@@ -155,6 +155,21 @@ def playerStandings(tournament_id):
                               matches.player_2_id = players.id) AND
                               tournament_id = %s AND
                               matches.draw = True) as "Draws",
+                              
+                      (SELECT COUNT(*)
+                       FROM   matches
+                       WHERE  tournament_id = %s AND
+                              NOT(matches.winner_id = players.id) AND
+                             (matches.winner_id IN (
+                              SELECT matches.player_1_id
+                              FROM   matches
+                              WHERE  matches.player_2_id = players.id AND
+                                     tournament_id = %s) OR
+                              matches.winner_id IN (
+                              SELECT matches.player_2_id
+                              FROM   matches
+                              WHERE  matches.player_1_id = players.id AND
+                                     tournament_id = %s))) as "OMW",
                       (SELECT COUNT(*)
                        FROM   matches
                        WHERE  (matches.player_1_id = players.id OR
@@ -163,14 +178,17 @@ def playerStandings(tournament_id):
                       FROM players INNER JOIN competitors
                            ON (players.id = competitors.competitor_id)
                       WHERE competitors.tournament_id = %s
-                      ORDER BY "Wins" DESC, "Draws" DESC, "Matches" DESC;""",
+                      ORDER BY "Wins" DESC, "Draws" DESC, "OMW" DESC,
+                               "Matches" DESC;""",
                       (tournament_id, tournament_id, tournament_id,
+                       tournament_id, tournament_id, tournament_id,
                        tournament_id,))
     
     # Start with an empty list, iterate through results, and append row by row
     playerStandings = []
     for row in dbcursor.fetchall():
-        playerStandings.append((row[0], row[1], row[2], row[3], row[4], row[5]))
+        playerStandings.append((row[0], row[1], row[2], row[3], row[4], row[5],
+                                row[6]))
     
     dbconnection.close()
     return playerStandings

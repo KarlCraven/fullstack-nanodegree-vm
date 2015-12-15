@@ -75,7 +75,7 @@ def testRegisterCompetitors():
     
 def testPlayRounds(t_id):
     matchPairings = swissPairings(t_id)
-    print "\nPlayers have been paired"
+    print "\nPlayers have been paired...\n"
     for row in matchPairings:
         randomNum = random.random()
         if (randomNum < 0.33):
@@ -88,16 +88,18 @@ def testPlayRounds(t_id):
             print row[1] + " vs. " + row[3] + " -> draw!"
             reportMatch(t_id, row[2], row[0], None, True)
     print "\nMatch winners have been declared. Current standings..."
-    print "\nPlayer Name         |  Wins   |  Draws  | Matches | Bye Used?"
-    print "-------------------------------------------------------------"
+    print "\nPlayer Name       |  Wins   |  Draws  | O.M.W.  | Matches |" + \
+          " Bye Used?"
+    print "--------------------------------------------------------------------"
     currentStandings = playerStandings(t_id)
     for row in currentStandings:
         spacing = ""
-        for space in range(20-len(row[1])):
+        for space in range(18-len(row[1])):
             spacing += " "
         print row[1] + spacing + "|    " + str(row[3]) + "    |    " + \
-              str(row[4]) + "    |    " + str(row[5]) + "    |   " + str(row[2])
-    print "-------------------------------------------------------------"
+              str(row[4]) + "    |    " + str(row[5]) + "    |    " + \
+              str(row[6]) + "    | " + str(row[2])
+    print "--------------------------------------------------------------------"
     
 
 if __name__ == '__main__':
@@ -111,10 +113,10 @@ if __name__ == '__main__':
         print "\n=============================================================="
         print "\nBeginning Tournament " + str(id) + "..."
         print "\n=============================================================="
-        print "\nROUND 1! -----------------------------------------------------"
+        print "\nROUND 1! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
         testPlayRounds(id)
-        print "\nROUND 2! -----------------------------------------------------"
+        print "\nROUND 2! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
         testPlayRounds(id)
-        print "\nROUND 3! -----------------------------------------------------"
+        print "\nROUND 3! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
         testPlayRounds(id)
         print "\n3 rounds have been tested"
