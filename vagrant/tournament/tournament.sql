@@ -36,5 +36,6 @@ CREATE TABLE matches (
     player_1_id     integer REFERENCES players(id),
     player_2_id     integer REFERENCES players(id),
     winner_id       integer REFERENCES players(id),
+    draw            boolean,
     PRIMARY KEY (tournament_id, player_1_id, player_2_id)
 );

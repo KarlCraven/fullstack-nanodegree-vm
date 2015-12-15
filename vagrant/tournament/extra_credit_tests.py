@@ -40,7 +40,6 @@ def testRegisterCompetitors():
     i = 0
     
     for row in dbcursor.fetchall():
-        print str(i)
         if (i % 2 == 0):
             t1_player_ids.append(row)
         else:
@@ -78,17 +77,28 @@ def testPlayRounds(t_id):
     matchPairings = swissPairings(t_id)
     print "\nPlayers have been paired"
     for row in matchPairings:
-        if (random.random() < 0.5):
+        randomNum = random.random()
+        if (randomNum < 0.33):
             print row[1] + " vs. " + row[3] + " -> " + row[1] + " wins!"
-            reportMatch(t_id, row[0], row[2])
-        else:
+            reportMatch(t_id, row[0], row[2], row[0], False)
+        elif (randomNum < 0.66):
             print row[1] + " vs. " + row[3] + " -> " + row[3] + " wins!"
-            reportMatch(t_id, row[2], row[0])
+            reportMatch(t_id, row[0], row[2], row[2], False)
+        else:
+            print row[1] + " vs. " + row[3] + " -> draw!"
+            reportMatch(t_id, row[2], row[0], None, True)
     print "\nMatch winners have been declared. Current standings..."
+    print "\nPlayer Name         |  Wins   |  Draws  | Matches | Bye Used?"
+    print "-------------------------------------------------------------"
     currentStandings = playerStandings(t_id)
     for row in currentStandings:
-        print row[1] + ": " + str(row[3]) + "/" + str(row[4]) + " (" + \
-              str(row[2]) + ")"  
+        spacing = ""
+        for space in range(20-len(row[1])):
+            spacing += " "
+        print row[1] + spacing + "|    " + str(row[3]) + "    |    " + \
+              str(row[4]) + "    |    " + str(row[5]) + "    |   " + str(row[2])
+    print "-------------------------------------------------------------"
+    
 
 if __name__ == '__main__':
     clearAllTables()
@@ -97,9 +107,10 @@ if __name__ == '__main__':
     tournament_id = testRegisterCompetitors()
     
     for id in tournament_id:
+        print "\n"
         print "\n=============================================================="
         print "\nBeginning Tournament " + str(id) + "..."
-        print "\n"
+        print "\n=============================================================="
         print "\nROUND 1! -----------------------------------------------------"
         testPlayRounds(id)
         print "\nROUND 2! -----------------------------------------------------"

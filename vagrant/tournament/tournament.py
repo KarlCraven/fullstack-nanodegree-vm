@@ -127,19 +127,19 @@ def useCompetitorBye(tournament_id, competitor_id):
     dbconnection.close()
     
 def playerStandings(tournament_id):
-    """Returns a list of the players and their win records, sorted by wins, for
-    a specific tournament.
+    """ Returns a list of the players and their win records, sorted by wins,
+        then draws, then number of matches played, for a specific tournament.
 
-    The first entry in the list should be the player in first place, or a player
-    tied for first place if there is currently a tie.
+        The first entry in the list should be the player in first place, or a
+        player tied for first place if there is currently a tie.
 
-    Returns:
-      A list of tuples, each of which contains (id, name, bye, wins, matches):
-        id: the player's unique id (assigned by the database)
-        name: the player's full name (as registered)
-        bye: whether or not they have used their round bye in this tournament
-        wins: the number of matches the player has won
-        matches: the number of matches the player has played
+        Returns:
+        A list of tuples, each of which contains (id, name, bye, wins, matches):
+            id: the player's unique id (assigned by the database)
+            name: the player's full name (as registered)
+            bye: whether or not they have used their round bye this tournament
+            wins: the number of matches the player has won
+            matches: the number of matches the player has played
     """
     dbconnection = connect()
     dbcursor = dbconnection.cursor()
@@ -153,56 +153,65 @@ def playerStandings(tournament_id):
                        FROM   matches
                        WHERE  (matches.player_1_id = players.id OR
                               matches.player_2_id = players.id) AND
+                              tournament_id = %s AND
+                              matches.draw = True) as "Draws",
+                      (SELECT COUNT(*)
+                       FROM   matches
+                       WHERE  (matches.player_1_id = players.id OR
+                              matches.player_2_id = players.id) AND
                               tournament_id = %s) as "Matches"
                       FROM players INNER JOIN competitors
                            ON (players.id = competitors.competitor_id)
                       WHERE competitors.tournament_id = %s
-                      ORDER BY "Wins" DESC, "Matches" DESC;""",
-                      (tournament_id, tournament_id, tournament_id,))
+                      ORDER BY "Wins" DESC, "Draws" DESC, "Matches" DESC;""",
+                      (tournament_id, tournament_id, tournament_id,
+                       tournament_id,))
     
     # Start with an empty list, iterate through results, and append row by row
     playerStandings = []
     for row in dbcursor.fetchall():
-        playerStandings.append((row[0], row[1], row[2], row[3], row[4]))
+        playerStandings.append((row[0], row[1], row[2], row[3], row[4], row[5]))
     
     dbconnection.close()
     return playerStandings
 
 
-def reportMatch(tournament_id, winner, loser):
+def reportMatch(tournament_id, player_1_id, player_2_id, winner, draw):
     """Records the outcome of a single match between two players in a specific
     tournament.
 
     Args:
       tournament_id:  the id of the tournament this match belongs to
-      winner:  the id number of the player who won
-      loser:  the id number of the player who lost
+      player_1_id: the id of the first player in the match
+      player_2_id: the id of the secind player in the match
+      winner:  the id number of the player who won (if there was not a draw)
+      draw: boolean indicating whether or not the match was a draw
     """
     # Keeping things orderly by always inserting player IDs lowest to highest
-    player1ID = min(winner, loser)
-    player2ID = max(winner, loser)
+    player1ID = min(player_1_id, player_2_id)
+    player2ID = max(player_1_id, player_2_id)
     
     dbconnection = connect()
     dbcursor = dbconnection.cursor()
     
     # Use string insertion method with tuple to prevent SQL injection attacks
     dbcursor.execute("""INSERT INTO matches (tournament_id, player_1_id,
-                        player_2_id, winner_id) VALUES
-                        (%s, %s, %s, %s);""",
-                        (tournament_id, player1ID, player2ID, winner,))
+                        player_2_id, winner_id, draw) VALUES
+                        (%s, %s, %s, %s, %s);""",
+                        (tournament_id, player1ID, player2ID, winner, draw,))
     
     dbconnection.commit()
     dbconnection.close()
  
  
 def havePlayedPreviously(tournament_id, player1, player2):
-    """"Returns True if the two players passed as arguments have played each
-    other already in this tournament.
+    """ Returns True if the two players passed as arguments have played each
+        other already in this tournament.
     
-    Queries the matches database looking for the lowest player id as player_1_id
-    because we wrote reportMatch() to always sort the player ids before creating
-    a new row. This eliminates us having to look for the pair in either order
-    in this function."""
+        Queries the matches database looking for the lowest player id as
+        player_1_id because we wrote reportMatch() to always sort the player ids
+        before creating a new row. This eliminates us having to look for the
+        pair in either order in this function."""
     
     # Assign player ids in a way that'll allow us to search for the lowest first
     player1ID = min(player1, player2)
@@ -233,19 +242,20 @@ def havePlayedPreviously(tournament_id, player1, player2):
     
  
 def swissPairings(tournament_id):
-    """Returns a list of pairs of players for the next round of a match in a
-    specific tournament.
+    """ Returns a list of pairs of players for the next round of a match in a
+        specific tournament.
   
-    Each player is paired with another player with an equal or nearly-equal win
-    record, that is, a player adjacent to him or her in the standings. If there
-    is an odd number of players, one of them gets a 'bye' for this round.
+        Each player is paired with another player with an equal or nearly-equal
+        win record (that is, a player adjacent to him or her in the standings).
+        If there is an odd number of players, one of them gets a 'bye' for this
+        round.
   
-    Returns:
-      A list of tuples, each of which contains (id1, name1, id2, name2)
-        id1: the first player's unique id
-        name1: the first player's name
-        id2: the second player's unique id
-        name2: the second player's name
+        Returns:
+        A list of tuples, each of which contains (id1, name1, id2, name2)
+            id1: the first player's unique id
+            name1: the first player's name
+            id2: the second player's unique id
+            name2: the second player's name
     """
     currentStandings = playerStandings(tournament_id)
     
@@ -262,7 +272,7 @@ def swissPairings(tournament_id):
             if (player[2] == False):
                 currentStandings.remove(player)
                 useCompetitorBye(tournament_id, player[0])
-                reportMatch(tournament_id, player[0], player[0])
+                reportMatch(tournament_id, player[0], player[0], None, False)
                 break
     
     # Start with an empty list, iterate through results of playerStandings
